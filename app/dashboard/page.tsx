@@ -14,6 +14,8 @@ interface Task {
   priority: 'high' | 'medium' | 'low'
   category: string
   status: 'pending' | 'completed'
+  hasReminder?: boolean
+  reminderDays?: string
 }
 
 export default function Dashboard() {
