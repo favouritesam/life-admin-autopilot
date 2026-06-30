@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export default function LandingPage() {
     return (
@@ -14,9 +15,12 @@ export default function LandingPage() {
                     </div>
                     <span className="text-xl font-bold text-foreground">Life Admin</span>
                 </div>
-                <Link href="/sign-in">
-                    <Button variant="outline">Sign In</Button>
-                </Link>
+                <div className="flex items-center gap-3">
+                    <ThemeToggle />
+                    <Link href="/sign-in">
+                        <Button variant="outline">Sign In</Button>
+                    </Link>
+                </div>
             </nav>
 
             {/* Hero Section */}
