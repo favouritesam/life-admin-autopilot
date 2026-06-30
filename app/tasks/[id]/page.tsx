@@ -34,6 +34,8 @@ export default function EditTaskPage() {
   const [dueDate, setDueDate] = useState('')
   const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium')
   const [category, setCategory] = useState('')
+  const [hasReminder, setHasReminder] = useState(false)
+  const [reminderDays, setReminderDays] = useState('1')
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
@@ -242,6 +244,41 @@ export default function EditTaskPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Reminder Section */}
+          <div className="bg-card rounded-lg border border-border p-6 space-y-4">
+            <h2 className="text-lg font-semibold text-foreground">Reminder</h2>
+            
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={hasReminder}
+                onChange={(e) => setHasReminder(e.target.checked)}
+                className="w-4 h-4 rounded border-border"
+                disabled={isSaving}
+              />
+              <span className="text-sm text-foreground">Set reminder for this task</span>
+            </label>
+            
+            {hasReminder && (
+              <div className="pl-6">
+                <label className="block text-sm font-medium text-foreground mb-2">Remind me</label>
+                <select
+                  value={reminderDays}
+                  onChange={(e) => setReminderDays(e.target.value)}
+                  className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  disabled={isSaving}
+                >
+                  <option value="0">On due date</option>
+                  <option value="1">1 day before</option>
+                  <option value="3">3 days before</option>
+                  <option value="7">1 week before</option>
+                  <option value="14">2 weeks before</option>
+                  <option value="30">1 month before</option>
+                </select>
+              </div>
+            )}
           </div>
 
           {/* Error Message */}
