@@ -19,3 +19,4 @@ __v0_jsx-dev-runtime.ts
 .ARCHITECTURE.md
 package.json
 tsconfig.json
+.gitignore
