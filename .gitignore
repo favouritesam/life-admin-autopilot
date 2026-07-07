@@ -10,7 +10,7 @@ __v0_jsx-dev-runtime.ts
 .env*.local
 
 # Common ignores
-node_modules
+.node_modules
 .next/
 .DS_Store
 .zencoder
@@ -19,4 +19,5 @@ node_modules
 .gitignore
 .DOCS.md
 .ARCHITECTURE.md
+package.json
 tsconfig.json

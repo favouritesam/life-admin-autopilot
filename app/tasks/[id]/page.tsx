@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import Navigation from '@/components/navigation'
+import { toast } from 'sonner'
 
 const CATEGORIES = [
   { value: 'finance', label: 'Finance', icon: '💰' },

@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import Navigation from '@/components/navigation'
 import DashboardTimeline from '@/components/dashboard-timeline'
+import { toast } from 'sonner'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 
 interface Task {
   id: string
@@ -22,6 +24,8 @@ export default function TasksPage() {
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
   const [isLoading, setIsLoading] = useState(true)
   const [tasks, setTasks] = useState<Task[]>([])
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [taskToDelete, setTaskToDelete] = useState<string | null>(null)
 
   useEffect(() => {
     fetchTasks()
@@ -76,6 +80,9 @@ export default function TasksPage() {
         setTasks(tasks.map(t =>
           t.id === id ? { ...t, status: task.status } : t
         ))
+        toast.error('Failed to update task')
+      } else {
+        toast.success('Task updated')
       }
     } catch (error) {
       console.error('Error updating task:', error)
@@ -83,7 +90,33 @@ export default function TasksPage() {
       setTasks(tasks.map(t =>
         t.id === id ? { ...t, status: task.status } : t
       ))
+      toast.error('Error updating task')
     }
+  }
+
+  const deleteTask = async (id: string) => {
+    toast.promise(
+      (async () => {
+        // Delete from API
+        const response = await fetch(`/api/tasks/${id}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to delete task')
+        }
+
+        // Optimistic update on success
+        setTasks(tasks.filter(t => t.id !== id))
+        return true
+      })(),
+      {
+        loading: 'Deleting task...',
+        success: 'Task deleted',
+        error: 'Failed to delete task',
+      }
+    )
   }
 
   if (isLoading) {
@@ -134,7 +167,7 @@ export default function TasksPage() {
         {/* Tasks Timeline */}
         <div className="bg-card rounded-lg border border-border p-6">
           {viewMode === 'list' ? (
-            <DashboardTimeline tasks={tasks} onToggleTask={toggleTask} />
+            <DashboardTimeline tasks={tasks} onToggleTask={toggleTask} onDeleteTask={deleteTask} />
           ) : (
             <div className="text-center py-12">
               <div className="text-4xl mb-4">📅</div>

@@ -1,21 +1,23 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import {useEffect, useState} from 'react'
+import {useRouter} from 'next/navigation'
 import Navigation from '@/components/navigation'
 import DashboardTimeline from '@/components/dashboard-timeline'
 import TaskQuickAdd from '@/components/task-quick-add'
+import {toast} from 'sonner'
+import {ConfirmDialog} from '@/components/confirm-dialog'
 
 interface Task {
-  id: string
-  title: string
-  description?: string
-  dueDate: Date
-  priority: 'high' | 'medium' | 'low'
-  category: string
-  status: 'pending' | 'completed'
-  hasReminder?: boolean
-  reminderDays?: string
+    id: string
+    title: string
+    description?: string
+    dueDate: Date
+    priority: 'high' | 'medium' | 'low'
+    category: string
+    status: 'pending' | 'completed'
+    hasReminder?: boolean
+    reminderDays?: string
 }
 
 export default function Dashboard() {
@@ -23,6 +25,8 @@ export default function Dashboard() {
     const [isLoading, setIsLoading] = useState(true)
     const [userName, setUserName] = useState('')
     const [tasks, setTasks] = useState<Task[]>([])
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+    const [taskToDelete, setTaskToDelete] = useState<string | null>(null)
 
     useEffect(() => {
         // Check if user is authenticated and get user data
@@ -85,38 +89,82 @@ export default function Dashboard() {
 
         // Optimistic update
         setTasks(tasks.map(t =>
-            t.id === id ? { ...t, status: newStatus } : t
+            t.id === id ? {...t, status: newStatus} : t
         ))
 
         // Save to API
         try {
             const response = await fetch(`/api/tasks/${id}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 credentials: 'include',
-                body: JSON.stringify({ status: newStatus }),
+                body: JSON.stringify({status: newStatus}),
             })
 
             if (!response.ok) {
                 // Revert on error
                 setTasks(tasks.map(t =>
-                    t.id === id ? { ...t, status: task.status } : t
+                    t.id === id ? {...t, status: task.status} : t
                 ))
+                toast.error('Failed to update task')
+            } else {
+                toast.success('Task updated')
             }
         } catch (error) {
             console.error('Error updating task:', error)
             // Revert on error
             setTasks(tasks.map(t =>
-                t.id === id ? { ...t, status: task.status } : t
+                t.id === id ? {...t, status: task.status} : t
             ))
+            toast.error('Error updating task')
         }
+    }
+
+    const deleteTask = async (id: string) => {
+        setTaskToDelete(id)
+        setIsDeleteModalOpen(true)
+    }
+
+    const confirmDelete = async () => {
+        if (!taskToDelete) return
+
+        setIsDeleteModalOpen(false)
+
+        toast.promise(
+            (async () => {
+                // Delete from API
+                const response = await fetch(`/api/tasks/${taskToDelete}`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                })
+
+                if (!response.ok) {
+                    throw new Error('Failed to delete task')
+                }
+
+                // Optimistic update on success
+                setTasks(tasks.filter(t => t.id !== taskToDelete))
+                setTaskToDelete(null)
+                return true
+            })(),
+            {
+                loading: 'Deleting task...',
+                success: 'Task deleted',
+                error: 'Failed to delete task',
+            }
+        )
+    }
+
+    const cancelDelete = () => {
+        setIsDeleteModalOpen(false)
+        setTaskToDelete(null)
     }
 
     const handleTaskCreate = async (newTask: Task) => {
         try {
             const response = await fetch('/api/tasks', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 credentials: 'include',
                 body: JSON.stringify({
                     title: newTask.title,
@@ -136,11 +184,13 @@ export default function Dashboard() {
                     ...newTask,
                     id: createdTask.id.toString(),
                 }])
+                toast.success('Task created successfully')
             } else {
-                console.error('Failed to create task')
+                toast.error('Failed to create task')
             }
         } catch (error) {
             console.error('Error creating task:', error)
+            toast.error('Error creating task')
         }
     }
 
@@ -160,7 +210,8 @@ export default function Dashboard() {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
                 <div className="text-center">
-                    <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <div
+                        className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                     <p className="text-muted-foreground">Loading...</p>
                 </div>
             </div>
@@ -169,7 +220,7 @@ export default function Dashboard() {
 
     return (
         <div className="min-h-screen bg-background">
-            <Navigation />
+            <Navigation/>
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Welcome Section */}
                 <div className="mb-8">
@@ -181,14 +232,39 @@ export default function Dashboard() {
                     </p>
                 </div>
 
+
+                {/* Bottom Section - Categories */}
+                <div className="mt-8">
+                    <h2 className="text-xl font-semibold text-foreground mb-4">Categories</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        {[
+                            {icon: '💰', name: 'Finance', color: 'from-green-500/10 to-green-500/5'},
+                            {icon: '🏥', name: 'Health', color: 'from-red-500/10 to-red-500/5'},
+                            {icon: '⚖️', name: 'Legal', color: 'from-blue-500/10 to-blue-500/5'},
+                            {icon: '🏠', name: 'Home', color: 'from-yellow-500/10 to-yellow-500/5'},
+                            {icon: '💼', name: 'Work', color: 'from-purple-500/10 to-purple-500/5'},
+                            {icon: '👤', name: 'Personal', color: 'from-pink-500/10 to-pink-500/5'},
+                        ].map((category) => (
+                            <button
+                                key={category.name}
+                                className={`bg-gradient-to-br ${category.color} rounded-lg border border-border p-4 hover:border-primary/50 transition-colors text-center`}
+                            >
+                                <div className="text-2xl mb-2">{category.icon}</div>
+                                <div className="text-sm font-medium text-foreground">{category.name}</div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
                 {/* Main Grid Layout */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
                     {/* Left Column - Quick Add & Stats */}
                     <div className="lg:col-span-1 space-y-6">
-                        <TaskQuickAdd onTaskCreate={handleTaskCreate} />
+                        <TaskQuickAdd onTaskCreate={handleTaskCreate}/>
 
                         {/* Urgency Suggestions */}
-                        <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20 p-6">
+                        <div
+                            className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20 p-6">
                             <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                                 <span>🎯</span> What to Focus On
                             </h3>
@@ -256,34 +332,23 @@ export default function Dashboard() {
                                     Organized by urgency and date
                                 </span>
                             </div>
-                            <DashboardTimeline tasks={tasks} onToggleTask={toggleTask} />
+                            <DashboardTimeline tasks={tasks} onToggleTask={toggleTask} onDeleteTask={deleteTask}/>
                         </div>
                     </div>
                 </div>
 
-                {/* Bottom Section - Categories */}
-                <div className="mt-8">
-                    <h2 className="text-xl font-semibold text-foreground mb-4">Categories</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                        {[
-                            { icon: '💰', name: 'Finance', color: 'from-green-500/10 to-green-500/5' },
-                            { icon: '🏥', name: 'Health', color: 'from-red-500/10 to-red-500/5' },
-                            { icon: '⚖️', name: 'Legal', color: 'from-blue-500/10 to-blue-500/5' },
-                            { icon: '🏠', name: 'Home', color: 'from-yellow-500/10 to-yellow-500/5' },
-                            { icon: '💼', name: 'Work', color: 'from-purple-500/10 to-purple-500/5' },
-                            { icon: '👤', name: 'Personal', color: 'from-pink-500/10 to-pink-500/5' },
-                        ].map((category) => (
-                            <button
-                                key={category.name}
-                                className={`bg-gradient-to-br ${category.color} rounded-lg border border-border p-4 hover:border-primary/50 transition-colors text-center`}
-                            >
-                                <div className="text-2xl mb-2">{category.icon}</div>
-                                <div className="text-sm font-medium text-foreground">{category.name}</div>
-                            </button>
-                        ))}
-                    </div>
-                </div>
             </main>
+
+            {/* Delete Confirmation Modal */}
+            <ConfirmDialog
+                isOpen={isDeleteModalOpen}
+                title="Delete Task"
+                message="Are you sure you want to delete this task? This action cannot be undone."
+                onConfirm={confirmDelete}
+                onCancel={cancelDelete}
+                confirmText="Delete"
+                cancelText="Cancel"
+            />
         </div>
     )
 }

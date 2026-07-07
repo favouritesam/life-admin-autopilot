@@ -49,9 +49,10 @@ interface Task {
 interface DashboardTimelineProps {
   tasks: Task[]
   onToggleTask?: (id: string) => void
+  onDeleteTask?: (id: string) => void
 }
 
-export default function DashboardTimeline({ tasks = [], onToggleTask }: DashboardTimelineProps) {
+export default function DashboardTimeline({ tasks = [], onToggleTask, onDeleteTask }: DashboardTimelineProps) {
   const sortedTasks = [...tasks].sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime())
 
   return (
@@ -134,6 +135,14 @@ export default function DashboardTimeline({ tasks = [], onToggleTask }: Dashboar
                       Edit
                     </Button>
                   </Link>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onDeleteTask?.(task.id)}
+                    className="text-destructive hover:bg-destructive/10"
+                  >
+                    Delete
+                  </Button>
                 </div>
               </div>
             </div>

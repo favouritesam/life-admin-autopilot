@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import Navigation from '@/components/navigation'
 import Link from 'next/link'
+import { toast } from 'sonner'
 
 interface Reminder {
   id: string
@@ -59,6 +60,7 @@ export default function RemindersPage() {
       }
     } catch (error) {
       console.error('Error fetching reminders:', error)
+      toast.error('Error fetching reminders')
     } finally {
       setIsLoading(false)
     }
@@ -78,9 +80,11 @@ export default function RemindersPage() {
       })
       if (response.ok) {
         setReminders(reminders.filter(r => r.taskId !== taskId))
+        toast.success('Reminder deleted')
       }
     } catch (error) {
       console.error('Error deleting reminder:', error)
+      toast.error('Error deleting reminder')
     }
   }
 
