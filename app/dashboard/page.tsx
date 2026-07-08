@@ -7,6 +7,7 @@ import DashboardTimeline from '@/components/dashboard-timeline'
 import TaskQuickAdd from '@/components/task-quick-add'
 import {toast} from 'sonner'
 import {ConfirmDialog} from '@/components/confirm-dialog'
+import {TaskReminder} from '@/components/task-reminder'
 
 interface Task {
     id: string
@@ -27,6 +28,7 @@ export default function Dashboard() {
     const [tasks, setTasks] = useState<Task[]>([])
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
     const [taskToDelete, setTaskToDelete] = useState<string | null>(null)
+    const [alarmingTaskIds, setAlarmingTaskIds] = useState<string[]>([])
 
     useEffect(() => {
         // Check if user is authenticated and get user data
@@ -332,7 +334,7 @@ export default function Dashboard() {
                                     Organized by urgency and date
                                 </span>
                             </div>
-                            <DashboardTimeline tasks={tasks} onToggleTask={toggleTask} onDeleteTask={deleteTask}/>
+                            <DashboardTimeline tasks={tasks} onToggleTask={toggleTask} onDeleteTask={deleteTask} alarmingTaskIds={alarmingTaskIds}/>
                         </div>
                     </div>
                 </div>
@@ -349,6 +351,9 @@ export default function Dashboard() {
                 confirmText="Delete"
                 cancelText="Cancel"
             />
+
+            {/* Task Reminder - plays beep for tasks due within 24 hours */}
+            <TaskReminder tasks={tasks} onAlarmingTasksChange={setAlarmingTaskIds} />
         </div>
     )
 }

@@ -8,6 +8,7 @@ import Navigation from '@/components/navigation'
 import DashboardTimeline from '@/components/dashboard-timeline'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { TaskReminder } from '@/components/task-reminder'
 
 interface Task {
   id: string
@@ -26,6 +27,7 @@ export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null)
+  const [alarmingTaskIds, setAlarmingTaskIds] = useState<string[]>([])
 
   useEffect(() => {
     fetchTasks()
@@ -95,10 +97,19 @@ export default function TasksPage() {
   }
 
   const deleteTask = async (id: string) => {
+    setTaskToDelete(id)
+    setIsDeleteModalOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!taskToDelete) return
+
+    setIsDeleteModalOpen(false)
+
     toast.promise(
       (async () => {
         // Delete from API
-        const response = await fetch(`/api/tasks/${id}`, {
+        const response = await fetch(`/api/tasks/${taskToDelete}`, {
           method: 'DELETE',
           credentials: 'include',
         })
@@ -108,7 +119,8 @@ export default function TasksPage() {
         }
 
         // Optimistic update on success
-        setTasks(tasks.filter(t => t.id !== id))
+        setTasks(tasks.filter(t => t.id !== taskToDelete))
+        setTaskToDelete(null)
         return true
       })(),
       {
@@ -117,6 +129,11 @@ export default function TasksPage() {
         error: 'Failed to delete task',
       }
     )
+  }
+
+  const cancelDelete = () => {
+    setIsDeleteModalOpen(false)
+    setTaskToDelete(null)
   }
 
   if (isLoading) {
@@ -167,7 +184,7 @@ export default function TasksPage() {
         {/* Tasks Timeline */}
         <div className="bg-card rounded-lg border border-border p-6">
           {viewMode === 'list' ? (
-            <DashboardTimeline tasks={tasks} onToggleTask={toggleTask} onDeleteTask={deleteTask} />
+            <DashboardTimeline tasks={tasks} onToggleTask={toggleTask} onDeleteTask={deleteTask} alarmingTaskIds={alarmingTaskIds} />
           ) : (
             <div className="text-center py-12">
               <div className="text-4xl mb-4">📅</div>
@@ -178,6 +195,20 @@ export default function TasksPage() {
           )}
         </div>
       </main>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDialog
+        isOpen={isDeleteModalOpen}
+        title="Delete Task"
+        message="Are you sure you want to delete this task? This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      {/* Task Reminder - plays beep for tasks due within 24 hours */}
+      <TaskReminder tasks={tasks} onAlarmingTasksChange={setAlarmingTaskIds} />
     </div>
   )
 

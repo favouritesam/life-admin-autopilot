@@ -50,9 +50,10 @@ interface DashboardTimelineProps {
   tasks: Task[]
   onToggleTask?: (id: string) => void
   onDeleteTask?: (id: string) => void
+  alarmingTaskIds?: string[]
 }
 
-export default function DashboardTimeline({ tasks = [], onToggleTask, onDeleteTask }: DashboardTimelineProps) {
+export default function DashboardTimeline({ tasks = [], onToggleTask, onDeleteTask, alarmingTaskIds = [] }: DashboardTimelineProps) {
   const sortedTasks = [...tasks].sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime())
 
   return (
@@ -73,8 +74,10 @@ export default function DashboardTimeline({ tasks = [], onToggleTask, onDeleteTa
           sortedTasks.map(task => (
             <div
               key={task.id}
-              className={`bg-card rounded-lg border border-border p-4 hover:border-primary/50 transition-colors ${
+              className={`bg-card rounded-lg border p-4 hover:border-primary/50 transition-colors ${
                 task.status === 'completed' ? 'opacity-60' : ''
+              } ${
+                alarmingTaskIds.includes(task.id) ? 'border-red-500 bg-red-50 dark:bg-red-950/20 animate-pulse' : 'border-border'
               }`}
             >
               <div className="flex items-start gap-4">
