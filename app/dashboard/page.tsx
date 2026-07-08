@@ -5,6 +5,12 @@ import {useRouter} from 'next/navigation'
 import Navigation from '@/components/navigation'
 import DashboardTimeline from '@/components/dashboard-timeline'
 import TaskQuickAdd from '@/components/task-quick-add'
+import {CategoryProgress} from '@/components/category-progress'
+import {StatisticsDashboard} from '@/components/statistics-dashboard'
+import {StreakTracker} from '@/components/streak-tracker'
+import {Achievements} from '@/components/achievements'
+import {ProductivityScore} from '@/components/productivity-score'
+import {TaskSuggestions} from '@/components/task-suggestions'
 import {toast} from 'sonner'
 import {ConfirmDialog} from '@/components/confirm-dialog'
 import {TaskReminder} from '@/components/task-reminder'
@@ -235,27 +241,14 @@ export default function Dashboard() {
                 </div>
 
 
-                {/* Bottom Section - Categories */}
+                {/* Bottom Section - Statistics */}
                 <div className="mt-8">
-                    <h2 className="text-xl font-semibold text-foreground mb-4">Categories</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                        {[
-                            {icon: '💰', name: 'Finance', color: 'from-green-500/10 to-green-500/5'},
-                            {icon: '🏥', name: 'Health', color: 'from-red-500/10 to-red-500/5'},
-                            {icon: '⚖️', name: 'Legal', color: 'from-blue-500/10 to-blue-500/5'},
-                            {icon: '🏠', name: 'Home', color: 'from-yellow-500/10 to-yellow-500/5'},
-                            {icon: '💼', name: 'Work', color: 'from-purple-500/10 to-purple-500/5'},
-                            {icon: '👤', name: 'Personal', color: 'from-pink-500/10 to-pink-500/5'},
-                        ].map((category) => (
-                            <button
-                                key={category.name}
-                                className={`bg-gradient-to-br ${category.color} rounded-lg border border-border p-4 hover:border-primary/50 transition-colors text-center`}
-                            >
-                                <div className="text-2xl mb-2">{category.icon}</div>
-                                <div className="text-sm font-medium text-foreground">{category.name}</div>
-                            </button>
-                        ))}
-                    </div>
+                    <StatisticsDashboard tasks={tasks}/>
+                </div>
+
+                {/* Bottom Section - Achievements */}
+                <div className="mt-8">
+                    <Achievements tasks={tasks}/>
                 </div>
 
                 {/* Main Grid Layout */}
@@ -263,6 +256,18 @@ export default function Dashboard() {
                     {/* Left Column - Quick Add & Stats */}
                     <div className="lg:col-span-1 space-y-6">
                         <TaskQuickAdd onTaskCreate={handleTaskCreate}/>
+
+                        {/* Streak Tracker */}
+                        <StreakTracker tasks={tasks}/>
+
+                        {/* Productivity Score */}
+                        <ProductivityScore tasks={tasks}/>
+
+                        {/* Category Progress */}
+                        <CategoryProgress tasks={tasks}/>
+
+                        {/* AI Suggestions */}
+                        <TaskSuggestions tasks={tasks}/>
 
                         {/* Urgency Suggestions */}
                         <div

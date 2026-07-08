@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import Navigation from '@/components/navigation'
 import DashboardTimeline from '@/components/dashboard-timeline'
+import { CalendarView } from '@/components/calendar-view'
+import { KanbanBoard } from '@/components/kanban-board'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { TaskReminder } from '@/components/task-reminder'
@@ -22,7 +24,7 @@ interface Task {
 
 export default function TasksPage() {
   const router = useRouter()
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'kanban'>('list')
   const [isLoading, setIsLoading] = useState(true)
   const [tasks, setTasks] = useState<Task[]>([])
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
@@ -179,19 +181,22 @@ export default function TasksPage() {
           >
             Calendar View
           </Button>
+          <Button
+            onClick={() => setViewMode('kanban')}
+            variant={viewMode === 'kanban' ? 'default' : 'outline'}
+          >
+            Kanban Board
+          </Button>
         </div>
 
         {/* Tasks Timeline */}
         <div className="bg-card rounded-lg border border-border p-6">
           {viewMode === 'list' ? (
             <DashboardTimeline tasks={tasks} onToggleTask={toggleTask} onDeleteTask={deleteTask} alarmingTaskIds={alarmingTaskIds} />
+          ) : viewMode === 'calendar' ? (
+            <CalendarView tasks={tasks} onTaskClick={(taskId) => router.push(`/tasks/${taskId}`)} />
           ) : (
-            <div className="text-center py-12">
-              <div className="text-4xl mb-4">📅</div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Calendar View</h3>
-              <p className="text-muted-foreground mb-4">Calendar view coming soon!</p>
-              <p className="text-sm text-muted-foreground">For now, use the list view to see all your tasks organized by date.</p>
-            </div>
+            <KanbanBoard tasks={tasks} onTaskClick={(taskId) => router.push(`/tasks/${taskId}`)} onStatusChange={(taskId, newStatus) => toggleTask(taskId)} />
           )}
         </div>
       </main>

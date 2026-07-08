@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import { authClient } from '@/lib/auth-client'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export default function Navigation() {
   const router = useRouter()
@@ -41,6 +42,7 @@ export default function Navigation() {
             <Link href="/settings" className="text-foreground hover:text-primary transition">
               Settings
             </Link>
+            <ThemeToggle />
           </div>
 
           {/* Mobile Menu Button */}
@@ -90,6 +92,9 @@ export default function Navigation() {
             >
               Settings
             </Link>
+            <div className="px-4 py-2">
+              <ThemeToggle />
+            </div>
             <Button
               variant="ghost"
               onClick={handleLogout}
